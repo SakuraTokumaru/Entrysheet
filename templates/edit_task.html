@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block title %}
+課題編集 - {{ company.name }}
+{% endblock %}
+
+{% block content %}
+<h1>{{ company.name }} - 課題編集</h1>
+
+<!-- テーマを表示 -->
+<p><strong>テーマ:</strong> {{ task.theme }}</p>
+
+<form method="POST" action="{{ url_for('edit_task', task_id=task.id) }}">
+    <!-- 課題内容を編集する欄 -->
+    <label for="content">課題内容を編集:</label><br>
+    <textarea id="content" name="content" rows="10" cols="50" maxlength="2000" required>{{ task.content }}</textarea><br>
+    <p>文字数: <span id="charCount">0</span>/2000</p>
+    <button type="submit">更新</button>
+    <button type="submit" name="delete" value="1" style="color: red;">削除</button>
+</form>
+
+<a href="{{ url_for('company_page', company_id=company.id) }}">戻る</a>
+
+<script>
+    const content = document.getElementById('content');
+    const charCount = document.getElementById('charCount');
+
+    content.addEventListener('input', () => {
+        charCount.textContent = content.value.length;
+    });
+
+    // 初期文字数を設定
+    charCount.textContent = content.value.length;
+</script>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Entry Sheet
+{% endblock %}
+
+{% block content %}
+<h1>エントリーシート</h1>
+
+<!-- フォーム -->
+<form method="POST" action="/entry">
+    <label for="company_name">企業名:</label>
+    <input type="text" id="company_name" name="company_name" required>
+    <button type="submit">追加</button>
+</form>
+
+<!-- 保存された企業名を表示 -->
+<h2>保存された企業名</h2>
+<ul>
+    {% for company in companies %}
+        <li>
+            <a href="{{ url_for('company_page', company_id=company.id) }}">{{ company.name }}</a>
+            <form method="POST" action="{{ url_for('delete_company', company_id=company.id) }}" style="display: inline;">
+                <button type="submit" style="color: red;">削除</button>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -5,7 +5,34 @@ Home
 {% endblock %}
 
 {% block content %}
-<h1>Welcome to the Home Page!</h1>
-<p>You are logged in.</p>
-<a href="/logout">Log out</a>
+<!-- ユーザー情報を右上に表示 -->
+<div style="position: absolute; top: 10px; right: 10px; text-align: right;">
+    <p style="margin: 0;">ようこそ、{{ user.username }} さん</p>
+    <form method="POST" action="{{ url_for('logout') }}" style="display: inline;">
+        <button style="padding: 5px 10px; font-size: 12px;">ログアウト</button>
+    </form>
+</div>
+
+<div style="display: flex; align-items: center; justify-content: center; height: 100vh;">
+    <!-- 左側 -->
+    <div style="flex: 1; text-align: center;">
+        <a href="{{ url_for('entry') }}">
+            <button style="padding: 10px 20px; font-size: 16px;">エントリーシート</button>
+        </a>
+        <h2>企業リスト</h2>
+        <ul>
+            {% for company in companies %}
+                <li>{{ company.name }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- 縦線 -->
+    <div style="width: 1px; background-color: black; height: 80%;"></div>
+
+    <!-- 右側 -->
+    <div style="flex: 1; text-align: center;">
+        <p>右側のコンテンツをここに追加できます。</p>
+    </div>
+</div>
 {% endblock %}

@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}
+{{ company.name }}
+{% endblock %}
+
+{% block content %}
+<h1>{{ company.name }}</h1>
+<p>このページは {{ company.name }} の専用ページです。</p>
+
+<!-- テーマを入力するフォーム -->
+<form method="POST" action="{{ url_for('company_page', company_id=company.id) }}">
+    <label for="theme">テーマ:</label><br>
+    <input type="text" id="theme" name="theme" placeholder="テーマを入力してください" required><br>
+    <button type="submit">テーマを追加</button>
+</form>
+
+<!-- テーマと課題のリストを表示 -->
+<h2>課題一覧</h2>
+<ul>
+    {% for task in tasks %}
+        <li>
+            <p><strong>テーマ:</strong> {{ task.theme | default("未設定") }}</p>
+            <textarea id="content" name="content" rows="10" cols="50" maxlength="2000" required>{{ task.content | default("") }}</textarea>
+            <a href="{{ url_for('edit_task', task_id=task.id) }}">編集</a>
+        </li>
+    {% endfor %}
+</ul>
+
+<a href="{{ url_for('entry') }}">エントリーシートに戻る</a>
+{% endblock %}
