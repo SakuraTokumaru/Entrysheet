@@ -119,12 +119,14 @@ def delete_company(company_id):
 @app.route('/company/<int:company_id>', methods=['GET', 'POST'])
 @login_required
 def company_page(company_id):
+    # 現在の企業を取得
     company = Company.query.filter_by(id=company_id, user_id=session['user_id']).first()
     if not company:
         flash("企業が見つかりません。")
         return redirect(url_for('entry'))
 
     if request.method == 'POST':
+        # テーマを追加
         theme = request.form['theme']
         new_task = EntryTask(company_id=company.id, theme=theme)
         db.session.add(new_task)
@@ -132,20 +134,25 @@ def company_page(company_id):
         flash("テーマを追加しました。")
         return redirect(url_for('company_page', company_id=company_id))
 
+    # 現在の企業に関連する課題を取得
     tasks = EntryTask.query.filter_by(company_id=company.id).all()
     return render_template('company.html', company=company, tasks=tasks)
 
 @app.route('/edit_task/<int:task_id>', methods=['GET', 'POST'])
 @login_required
 def edit_task(task_id):
+    # 課題を取得
     task = EntryTask.query.get_or_404(task_id)
     company = Company.query.get(task.company_id)
-    if not company:
-        flash("企業が見つかりません。")
+
+    # 現在のユーザーがこの企業にアクセスできるか確認
+    if not company or company.user_id != session['user_id']:
+        flash("アクセス権がありません。")
         return redirect(url_for('entry'))
 
     if request.method == 'POST':
         if 'delete' in request.form:
+            # 課題を削除
             db.session.delete(task)
             db.session.commit()
             flash("課題を削除しました。")

@@ -21,7 +21,7 @@
     {% for task in tasks %}
         <li>
             <p><strong>テーマ:</strong> {{ task.theme | default("未設定") }}</p>
-            <textarea id="content" name="content" rows="10" cols="50" maxlength="2000" required>{{ task.content | default("") }}</textarea>
+            <p><strong>課題内容:</strong> {{ task.content | default("未入力") | nl2br }}</p>
             <a href="{{ url_for('edit_task', task_id=task.id) }}">編集</a>
         </li>
     {% endfor %}
