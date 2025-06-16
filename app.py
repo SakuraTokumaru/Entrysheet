@@ -5,6 +5,8 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from markupsafe import Markup, escape  # 修正: jinja2からmarkupsafeに変更
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
 
 app = Flask(__name__)  # ここでFlaskアプリケーションを定義
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'  # SQLiteを使用
@@ -26,12 +28,17 @@ class Company(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     name = db.Column(db.String(200), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    entry_tasks = db.relationship('EntryTask', backref='company', cascade='all, delete-orphan', passive_deletes=True)
 
 class EntryTask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
-    theme = db.Column(db.String(200), nullable=False)  # テーマ
-    content = db.Column(db.Text, nullable=True)  # 課題内容
+    company_id = db.Column(
+        db.Integer,
+        db.ForeignKey('company.id', ondelete='CASCADE'),
+        nullable=False
+    )
+    theme = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 # ログインしているかを確認するデコレータ
@@ -111,9 +118,9 @@ def delete_company(company_id):
     if company:
         db.session.delete(company)
         db.session.commit()
-        flash("企業を削除しました。")
+        flash("企業とそのエントリーシートを削除しました。")
     else:
-        flash("削除する企業が見つかりませんでした。")
+        flash("企業が見つかりませんでした。")
     return redirect(url_for('entry'))
 
 @app.route('/company/<int:company_id>', methods=['GET', 'POST'])
@@ -171,6 +178,12 @@ def edit_task(task_id):
 def nl2br(value):
     result = escape(value).replace('\n', Markup('<br>'))
     return Markup(result)
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
 
 if __name__ == '__main__':
     app.debug = True
