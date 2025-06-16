@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ year }}年{{ month }}月のカレンダー</title>
+    <style>
+        table {
+            width: 80%;
+            border-collapse: collapse;
+        }
+        th, td {
+            width: 14.28%;
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            vertical-align: top;
+            cursor: pointer;
+            position: relative;
+            height: 80px;
+        }
+        th {
+            background-color: #f2f2f2;
+            cursor: default;
+        }
+        .event {
+            background-color: #def;
+            margin-top: 4px;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            text-align: left;
+            word-wrap: break-word;
+        }
+        #eventForm {
+            display: none;
+            position: fixed;
+            top: 30%;
+            left: 40%;
+            background: white;
+            border: 1px solid #333;
+            padding: 20px;
+            z-index: 100;
+        }
+        #overlay {
+            display: none;
+            position: fixed;
+            top:0; left:0; right:0; bottom:0;
+            background: rgba(0,0,0,0.5);
+            z-index: 90;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ year }}年{{ month }}月のカレンダー</h1>
+
+    <div style="margin-bottom:10px;">
+        {% set prev_year = year %}
+        {% set prev_month = month - 1 %}
+        {% if prev_month == 0 %}
+            {% set prev_month = 12 %}
+            {% set prev_year = year - 1 %}
+        {% endif %}
+
+        {% set next_year = year %}
+        {% set next_month = month + 1 %}
+        {% if next_month == 13 %}
+            {% set next_month = 1 %}
+            {% set next_year = year + 1 %}
+        {% endif %}
+
+        <a href="{{ url_for('index', year=prev_year, month=prev_month) }}">← 前の月</a>
+        |
+        <a href="{{ url_for('index', year=next_year, month=next_month) }}">次の月 →</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th>土</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for week in month_days %}
+            <tr>
+                {% for day in week %}
+                    {% if day == 0 %}
+                        <td></td>
+                    {% else %}
+                        {% set date_str = '{}-{:02d}-{:02d}'.format(year, month, day) %}
+                        <td onclick="openForm('{{ date_str }}')">
+                            <div>{{ day }}</div>
+                            {% if date_str in events %}
+                                {% for ev in events[date_str] %}
+                                    <div class="event">{{ ev }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- 予定追加フォーム -->
+    <div id="overlay" onclick="closeForm()"></div>
+    <div id="eventForm">
+        <h3>予定を追加</h3>
+        <form method="post" action="{{ url_for('add_event') }}">
+            <input type="hidden" name="date" id="formDate" value="" />
+            <input type="hidden" name="year" value="{{ year }}" />
+            <input type="hidden" name="month" value="{{ month }}" />
+            <label id="formLabel"></label><br>
+            <input type="text" name="event" required autofocus />
+            <br><br>
+            <button type="submit">追加</button>
+            <button type="button" onclick="closeForm()">キャンセル</button>
+        </form>
+    </div>
+
+    <script>
+        function openForm(dateStr) {
+            document.getElementById('formDate').value = dateStr;
+            document.getElementById('formLabel').innerText = dateStr + ' の予定';
+            document.getElementById('eventForm').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+        function closeForm() {
+            document.getElementById('eventForm').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
